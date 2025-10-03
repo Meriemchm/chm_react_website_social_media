@@ -10,13 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@react-oauth/google": "^0.12.2",
     "@sanity/client": "^6.1.2",
     "@sanity/image-url": "^1.0.2",
     "gapi-client": "^0.0.3",
     "gapi-script": "^1.2.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-google-login": "^5.2.2",
     "react-icons": "^4.9.0",
     "react-loader-spinner": "^5.3.4",
     "react-masonry-css": "^1.0.16",
