@@ -1,44 +1,43 @@
-import React,{useEffect} from "react";
-import GoogleLogin from "react-google-login";
+import React from "react";
+import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import * as jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import shareVideo from "../assets/share.mp4";
 import logo from "../assets/logowhite.png";
 import { client } from "../client";
-import { gapi } from "gapi-script";
+
 const Login = () => {
   const navigate = useNavigate();
-  
-  const responseGoogle = (response) => {
-    console.log('1');
-    console.log(response)
-      localStorage.setItem("user", JSON.stringify(response.profileObj));
-      
-      const { name, googleId, imageUrl } = response.profileObj;
-  
+
+  const responseGoogle = (credentialResponse) => {
+    try {
+      // Le nouveau SDK renvoie un "credential" (JWT)
+      const decoded = jwt_decode(credentialResponse.credential);
+      console.log("User decoded:", decoded);
+
+      localStorage.setItem("user", JSON.stringify(decoded));
+
+      const { name, sub, picture } = decoded;
+
       const doc = {
-        _id: googleId,
+        _id: sub,
         _type: "user",
         userName: name,
-        image: imageUrl,
+        image: picture,
       };
 
-
-      console.log('2');
-
-      
       client.createIfNotExists(doc).then(() => {
-        console.log('3');
-        navigate("/",{replace: true });
-        console.log('4');
+        navigate("/", { replace: true });
       });
-    
+    } catch (err) {
+      console.error("Google login error:", err);
+    }
   };
-  
 
   return (
     <div className="flex justify-start items-center flex-col h-screen">
-      <div className="realtive w-full h-full">
+      <div className="relative w-full h-full">
         <video
           src={shareVideo}
           type="video/mp4"
@@ -53,22 +52,14 @@ const Login = () => {
             <img src={logo} width="130px" alt="logo" />
           </div>
           <div className="shadow-2xl">
-            <GoogleLogin
-              clientId={import.meta.env.VITE_GOOGLE_API_TOKEN}
-              render={(renderProps) => (
-                <button
-                  type="button"
-                  className="bg-mainColor flex justify-center items-center p-3 rounded-lg cursor-pointer outline-none"
-                  onClick={renderProps.onClick}
-                  disabled={renderProps.disabled}
-                >
-                  <FcGoogle className="mr-4" /> Sign in with google
-                </button>
-              )}
-              onSuccess={responseGoogle}
-              onFailure={responseGoogle}
-              cookiePolicy="single_host_origin"
-            />
+            <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_API_TOKEN}>
+              <GoogleLogin
+                onSuccess={responseGoogle}
+                onError={() => {
+                  console.log("Login Failed");
+                }}
+              />
+            </GoogleOAuthProvider>
           </div>
         </div>
       </div>

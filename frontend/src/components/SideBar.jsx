@@ -4,7 +4,7 @@ import { AiOutlineLogout } from "react-icons/ai";
 import { RiHomeFill } from "react-icons/ri";
 import { IoIosArrowForward } from "react-icons/io";
 import logo from "src/assets/logo.png";
-import { GoogleLogout } from "react-google-login";
+import { googleLogout } from "@react-oauth/google"; 
 import { categories } from "src/utils/data";
 
 const isNotActiveStyle =
@@ -14,13 +14,17 @@ const isActiveStyle =
 
 const SideBar = ({ user, closeToggle }) => {
   const navigate = useNavigate();
+
   const handleCloseSidebar = () => {
     if (closeToggle) closeToggle(false);
   };
+
   const logout = () => {
+    googleLogout(); // ✅ nouveau logout
     localStorage.clear();
     navigate("/login");
   };
+
   return (
     <div className="flex flex-col justify-between bg-white h-full overflow-y-scroll min-w-210 hide-scroll-bar">
       <div className="flex flex-col ">
@@ -32,6 +36,7 @@ const SideBar = ({ user, closeToggle }) => {
         >
           <img src={logo} alt="logo" className="w-full" />
         </Link>
+
         {/* user */}
         {user && (
           <Link
@@ -48,6 +53,7 @@ const SideBar = ({ user, closeToggle }) => {
             <IoIosArrowForward />
           </Link>
         )}
+
         {/* navlink */}
         <div className="flex flex-col gap-5 pb-3 pt-5">
           <NavLink
@@ -75,29 +81,23 @@ const SideBar = ({ user, closeToggle }) => {
               <img
                 src={category.image}
                 className="w-8 h-8 rounded-full shadow-sm"
+                alt={category.name}
               />
               {category.name}
             </NavLink>
           ))}
         </div>
+
         {/* logout */}
         {user && (
-          <GoogleLogout
-            clientId={`${import.meta.env.VITE_GOOGLE_API_TOKEN}`}
-            render={(renderProps) => (
-              <button
-                type="button"
-                className="relative bg-white p-5 rounded-full cursor-pointer outline-none shadow-md"
-                onClick={renderProps.onClick}
-                disabled={renderProps.disabled}
-              >
-                <p className="absolute t-0 left-12 text-bold">Deconnexion</p>
-                <AiOutlineLogout color="gray" fontSize={21} />
-              </button>
-            )}
-            onLogoutSuccess={logout}
-            cookiePolicy="single_host_origin"
-          />
+          <button
+            type="button"
+            className="relative bg-white p-5 rounded-full cursor-pointer outline-none shadow-md"
+            onClick={logout}
+          >
+            <p className="absolute t-0 left-12 text-bold">Déconnexion</p>
+            <AiOutlineLogout color="gray" fontSize={21} />
+          </button>
         )}
       </div>
     </div>
