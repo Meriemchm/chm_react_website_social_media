@@ -1,6 +1,5 @@
 import React from "react";
 import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
-import * as jwt_decode from "jwt-decode";
 import { useNavigate } from "react-router-dom";
 import { FcGoogle } from "react-icons/fc";
 import shareVideo from "../assets/share.mp4";
@@ -10,18 +9,20 @@ import { client } from "../client";
 const Login = () => {
   const navigate = useNavigate();
 
-  const responseGoogle = (credentialResponse) => {
+  const handleGoogleResponse = (credentialResponse) => {
     try {
-      // Le nouveau SDK renvoie un "credential" (JWT)
-      const decoded = jwt_decode(credentialResponse.credential);
-      console.log("User decoded:", decoded);
+      // Le credential est un JWT encodé
+      const base64Url = credentialResponse.credential.split('.')[1];
+      const decodedPayload = JSON.parse(atob(base64Url));
 
-      localStorage.setItem("user", JSON.stringify(decoded));
+      console.log("User decoded:", decodedPayload);
 
-      const { name, sub, picture } = decoded;
+      localStorage.setItem("user", JSON.stringify(decodedPayload));
+
+      const { name, sub, picture } = decodedPayload;
 
       const doc = {
-        _id: sub,
+        _id: sub,        // Google user ID comme ID Sanity
         _type: "user",
         userName: name,
         image: picture,
@@ -54,10 +55,8 @@ const Login = () => {
           <div className="shadow-2xl">
             <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_API_TOKEN}>
               <GoogleLogin
-                onSuccess={responseGoogle}
-                onError={() => {
-                  console.log("Login Failed");
-                }}
+                onSuccess={handleGoogleResponse}
+                onError={() => console.log("Login Failed")}
               />
             </GoogleOAuthProvider>
           </div>
